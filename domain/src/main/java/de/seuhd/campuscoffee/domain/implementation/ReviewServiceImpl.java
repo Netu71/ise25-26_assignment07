@@ -1,6 +1,7 @@
 package de.seuhd.campuscoffee.domain.implementation;
 
 import de.seuhd.campuscoffee.domain.configuration.ApprovalConfiguration;
+import de.seuhd.campuscoffee.domain.exceptions.ValidationException;
 import de.seuhd.campuscoffee.domain.model.objects.Review;
 import de.seuhd.campuscoffee.domain.ports.api.ReviewService;
 import de.seuhd.campuscoffee.domain.ports.data.CrudDataService;
@@ -23,7 +24,7 @@ public class ReviewServiceImpl extends CrudServiceImpl<Review, Long> implements 
     private final ReviewDataService reviewDataService;
     private final UserDataService userDataService;
     private final PosDataService posDataService;
-    // TODO: Try to find out the purpose of this class and how it is connected to the application.yaml configuration file.
+    // TODO: Try to find out the purpose of this class and how it is connected to the applion.yaml configuration file.
     private final ApprovalConfiguration approvalConfiguration;
 
     public ReviewServiceImpl(@NonNull ReviewDataService reviewDataService,
@@ -46,7 +47,6 @@ public class ReviewServiceImpl extends CrudServiceImpl<Review, Long> implements 
     @Transactional
     public @NonNull Review upsert(@NonNull Review review) {
         // TODO: Implement the missing business logic here
-
         return super.upsert(review);
     }
 
@@ -64,18 +64,30 @@ public class ReviewServiceImpl extends CrudServiceImpl<Review, Long> implements 
 
         // validate that the user exists
         // TODO: Implement the required business logic here
+        userDataService.getById(userId);
 
         // validate that the review exists
         // TODO: Implement the required business logic here
+        reviewDataService.getById(review.getId());
 
         // a user cannot approve their own review
         // TODO: Implement the required business logic here
+        if(review.author().getId().equals(userId)){
+            throw new ValidationException("Author can't approve his own review");
+        }
 
         // increment approval count
         // TODO: Implement the required business logic here
+        int approvalcount = review.approvalCount();
+        approvalcount++;
 
         // update approval status to determine if the review now reaches the approval quorum
         // TODO: Implement the required business logic here
+        boolean approved = approvalcount >= approvalConfiguration.minCount();
+        review = review.toBuilder().
+                approvalCount(approvalcount)
+                .approved(approved)
+                .build();
 
         return reviewDataService.upsert(review);
     }

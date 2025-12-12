@@ -1,16 +1,38 @@
 package de.seuhd.campuscoffee.api.dtos;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
+import lombok.NonNull;
 import org.jspecify.annotations.Nullable;
+
+import java.time.LocalDateTime;
 
 /**
  * DTO record for POS metadata.
  */
 @Builder(toBuilder = true)
 public record ReviewDto (
-    @Nullable Long id
-    // TODO: Implement ReviewDto
-) implements Dto<Long> {
+        @Nullable Long id,
+        // TODO: Implement ReviewDto
+        @Nullable LocalDateTime createdAt,
+        @Nullable LocalDateTime updatedAt,
+
+        @NotNull
+        @NonNull Long posId,
+
+        @NotNull
+        @NonNull Long authorId,
+
+        @NonNull
+        @NotBlank(message = "Review cannot be empty.")
+        String review,
+
+        @Nullable Boolean approved
+
+
+        ) implements Dto<Long> {
     @Override
     public @Nullable Long getId() {
         return id;
